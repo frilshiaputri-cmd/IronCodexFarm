@@ -52,23 +52,31 @@ end
 local Config = getgenv().IronSoulConfig
 if type(Config) ~= "table" then Config = {} end
 -- FPS Booster/FPS cap disabled.
-Config.FARM = "OFF"
+local isTeleportRestore = getgenv().IronCodexFarmTeleportContinuation == true
+if not isTeleportRestore then
+    Config.FARM = "OFF"
+end
 Config.TICKETS = Config.TICKETS or "SMART"
 Config.HEADLESS = Config.HEADLESS ~= false
 Config.DEBUG_LOGS = Config.DEBUG_LOGS == true
 Config.LEVEL_STOP = 0 -- level cap disabled in the custom Kaitun V2 bootstrap
 Config.AUTO_REDEEM = false
-Config.ANTI_AFK = false
+Config.ANTI_AFK = Config.ANTI_AFK == true
 Config.AutoSkill = Config.AutoSkill ~= false
 getgenv().IronSoulConfig = Config
-getgenv().IronSoulMasterEnabled = false
-getgenv().IronSoulStopRequested = true
+if not isTeleportRestore then
+    getgenv().IronSoulMasterEnabled = false
+    getgenv().IronSoulStopRequested = true
+else
+    getgenv().IronSoulMasterEnabled = Config.FARM ~= "OFF"
+    getgenv().IronSoulStopRequested = Config.FARM == "OFF"
+end
 -- Clear level-stop flags persisted by older V2 executions.
 getgenv().IronSoulLevelStopReached = false
 getgenv().IronSoulLevelStopLevel = nil
 
-local farmBootstrapped = false
-local farmEnabled = false
+local farmBootstrapped = isTeleportRestore
+local farmEnabled = isTeleportRestore and Config.FARM ~= "OFF"
 local function setFarm(enabled)
     enabled = enabled == true
     if enabled == farmEnabled then return end
@@ -120,7 +128,7 @@ end
 FarmPanel:CreateToggle({
     Name = "Auto Farm (IronSoul V2)",
     Flag = "ICF_AUTO_FARM",
-    Default = false,
+    Default = farmEnabled,
     Callback = function(value)
         setFarm(value)
     end,
