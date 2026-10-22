@@ -474,9 +474,9 @@ end)
         tostring(config.TICKETS or "SMART"),
         tostring(config.HEADLESS ~= false),
         tostring(config.DEBUG_LOGS == true),
-        tostring(tonumber(config.LEVEL_STOP) or 40),
+        tostring(tonumber(config.LEVEL_STOP) or 0),
         tostring(config.AutoSkill ~= false),
-        BASE .. "bootstrap_v2.lua",
+        "https://raw.githubusercontent.com/frilshiaputri-cmd/IronCodexFarm/main/bootstrap_v2.lua",
         VERSION
     )
 
