@@ -13,6 +13,10 @@ getgenv().IronSoulConfig =
     }
 
 local Config = getgenv().IronSoulConfig
+-- IronCodexFarm: clear stale level-stop state left by older V2 sessions.
+getgenv().IronSoulLevelStopReached = false
+getgenv().IronSoulLevelStopLevel = nil
+if type(Config) == "table" then Config.LEVEL_STOP = 0 end
 local VERSION = "K5_HUB_V2_AUTOEXEC_RETRY_20261021_3"
 local BASE =
     "https://raw.githubusercontent.com/"
@@ -161,15 +165,7 @@ local function status(message)
     end
     diag(isError and "ERROR" or "STATUS", value)
 
-    -- Legacy compact announcement: use Roblox's native toast, not an on-screen table.
-    local StarterGui = game:GetService("StarterGui")
-    pcall(function()
-        StarterGui:SetCore("SendNotification", {
-            Title = isError and "K5-Hub V2 | ERROR" or "K5-Hub V2",
-            Text = value,
-            Duration = isError and 8 or 4,
-        })
-    end)
+    -- IronCodexFarm: V2 on-screen toast announcements are disabled.
 
     if type(writefile) == "function" then
         pcall(writefile, "K5Hub_V2_Status.txt", table.concat({
@@ -312,6 +308,23 @@ local function normalizeSource(source)
     return source
 end
 
+local function stripLevelCapGuard(source, path)
+    if path == "systems/combat.lua" then
+        local first = string.find(source, "-- HARD LEVEL CAP:", 1, true)
+        local last = string.find(source, "-- World1 V61.15 remains frozen/stable.", first or 1, true)
+        if first and last and last > first then
+            source = string.sub(source, 1, first - 1) .. string.sub(source, last)
+        end
+    elseif path == "systems/lobby.lua" then
+        local first = string.find(source, "-- HARD LEVEL CAP: never schedule another dungeon", 1, true)
+        local last = string.find(source, "-- Resolve any Cave material delta", first or 1, true)
+        if first and last and last > first then
+            source = string.sub(source, 1, first - 1) .. string.sub(source, last)
+        end
+    end
+    return source
+end
+
 local function shortError(err)
     local value = tostring(err or "unknown")
     if #value > 190 then value = string.sub(value, 1, 190) .. "..." end
@@ -336,6 +349,7 @@ local function loadRaw(path)
         warn("[K5-Hub V2] " .. message); status("ERROR | " .. shortError(message))
         return false
     end
+    normalized = stripLevelCapGuard(normalized, path)
     local fn, err = loadstring(normalized)
     if not fn then
         local message = "Compile failed | " .. tostring(path) .. " | " .. tostring(err)
