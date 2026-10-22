@@ -321,6 +321,39 @@ local function stripLevelCapGuard(source, path)
         if first and last and last > first then
             source = string.sub(source, 1, first - 1) .. string.sub(source, last)
         end
+    elseif path == "systems/lobby_base_v60_1.lua" then
+        -- Always use normal queue/progression flow; remove the old Lv40-only lobby branch.
+        local first = string.find(source, "-- At the level cap, allow Daily Quest-only maintenance", 1, true)
+        local last = string.find(source, "local JOURNAL_FILE =", first or 1, true)
+        if first and last and last > first then
+            local replacement = [[local queue = queue_on_teleport or (syn and syn.queue_on_teleport)
+if type(queue) ~= "function" then
+    return stop("V2 requires queue_on_teleport to continue dungeon progression.")
+end
+local queueBootstrap = getgenv().IronSoulQueueBootstrap
+if type(queueBootstrap) ~= "function" then
+    return stop("V2 bootstrap queue helper missing.")
+end
+
+]]
+            source = string.sub(source, 1, first - 1) .. replacement .. string.sub(source, last)
+        end
+        first = string.find(source, "-- V2 reward policy: ONLY claim Daily Quest.", 1, true)
+        last = string.find(source, "local dailyLoginPending,", first or 1, true)
+        if first and last and last > first then
+            source = string.sub(source, 1, first - 1)
+                .. "-- IronCodexFarm: Lv40-only reward gate disabled.\n\n"
+                .. string.sub(source, last)
+        end
+        first = string.find(source, "-- Kick only after all Lv40 reward-claim functions above have been attempted.", 1, true)
+        last = string.find(source, "-- AUTO SEASON SPIN DISABLED:", first or 1, true)
+        if first and last and last > first then
+            source = string.sub(source, 1, first - 1)
+                .. "-- IronCodexFarm: level-based kick disabled.\n\n"
+                .. string.sub(source, last)
+        end
+    elseif path == "systems/auto_skill.lua" then
+        source = string.gsub(source, "if not getgenv%(%).IronSoulLevelStopReached%s+and%s+", "if ")
     end
     return source
 end
