@@ -286,7 +286,12 @@ pcall(function() rawset(getgenv(), "queue_on_teleport", compatibilityQueue) end)
 local fetchCounter = 0
 local function cacheBust(path)
     fetchCounter += 1
-    return BASE .. path .. "?isv=" .. VERSION .. "&n=" .. tostring(fetchCounter) .. "&t=" .. tostring(os.time())
+    -- Use K5_FULL-CODE's combat entry so its own patch chain and enemy scan run.
+    local sourceBase = BASE
+    if path == "systems/combat.lua" then
+        sourceBase = "https://raw.githubusercontent.com/frilshiaputri-cmd/K5_FULL-CODE/main/"
+    end
+    return sourceBase .. path .. "?isv=" .. VERSION .. "&n=" .. tostring(fetchCounter) .. "&t=" .. tostring(os.time())
 end
 
 local function normalizeSource(source)
