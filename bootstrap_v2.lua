@@ -319,7 +319,7 @@ local function shortError(err)
 end
 
 local function loadRaw(path)
-    if getgenv().IronSoulMasterEnabled == false and path ~= "systems/performance_booster.lua" then
+    if getgenv().IronSoulMasterEnabled == false then
         status("MASTER OFF | module blocked: " .. tostring(path))
         return false, "K5-HUB master switch is OFF"
     end
@@ -384,7 +384,6 @@ local function queueBootstrap(reason)
     local config = getgenv().IronSoulConfig or {}
     local payload = string.format([[
 local config = {
-    FPS_CAP = %s,
     FARM = %q,
     TICKETS = %q,
     HEADLESS = %s,
@@ -424,7 +423,6 @@ pcall(function()
     end
 end)
 ]],
-        tostring(tonumber(config.FPS_CAP) or 60),
         tostring(config.FARM or "NEWBIE"),
         tostring(config.TICKETS or "SMART"),
         tostring(config.HEADLESS ~= false),
