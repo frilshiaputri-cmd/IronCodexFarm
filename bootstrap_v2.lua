@@ -61,7 +61,7 @@ diag("INFO", "bootstrap entry started; version=K5-Hub V2")
 local TUTORIAL_PLACE_ID = 76701861705540
 local LOBBY_PLACE_ID = 117533937949084
 
--- Level cap disabled: no automatic level-based stop, lobby teleport, or kick.
+-- IronCodexFarm patch: level cap disabled as requested.
 -- Prevent duplicate queued copies in the same server/job.
 do
     local key = tostring(game.PlaceId) .. "|" .. tostring(game.JobId)
@@ -75,10 +75,7 @@ do
     getgenv().IronSoulBootstrapGuard = { Key = key, At = os.clock() }
 end
 
-if type(setfpscap) == "function" and tonumber(Config.FPS_CAP) then
-    pcall(setfpscap, tonumber(Config.FPS_CAP))
-end
-
+-- FPS cap modification removed as requested.
 local function executorName()
     if type(identifyexecutor) == "function" then
         local ok, a, b = pcall(identifyexecutor)
@@ -164,7 +161,15 @@ local function status(message)
     end
     diag(isError and "ERROR" or "STATUS", value)
 
-    -- Airflow integration: status is logged, but built-in toast announcements are disabled.
+    -- Legacy compact announcement: use Roblox's native toast, not an on-screen table.
+    local StarterGui = game:GetService("StarterGui")
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = isError and "K5-Hub V2 | ERROR" or "K5-Hub V2",
+            Text = value,
+            Duration = isError and 8 or 4,
+        })
+    end)
 
     if type(writefile) == "function" then
         pcall(writefile, "K5Hub_V2_Status.txt", table.concat({
@@ -463,14 +468,7 @@ getgenv().IronSoulLoadRaw = loadRaw
 -- Continuation is only allowed when explicitly requested by an active session,
 -- and remains governed by the normal manual-session continuation rules.
 
--- Auto-start the graphics/FPS helper whenever this bootstrap is run on a map.
--- This does not auto-run the full farm script on a fresh join without the loader.
-task.spawn(function()
-    local perfOk, perfErr = loadRaw("systems/performance_booster.lua")
-    if not perfOk then
-        diag("ERROR", "Performance Booster failed: " .. tostring(perfErr))
-    end
-end)
+-- Performance Booster module intentionally not loaded in IronCodexFarm.
 -- Intentionally do not queue on startup; run LOADER_V2.lua manually each session/map.
 
 local function looksLikeDungeon()
