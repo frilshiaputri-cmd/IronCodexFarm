@@ -116,6 +116,7 @@ end
 
 FarmPanel:CreateToggle({
     Name = "Auto Farm (IronSoul V2)",
+    Flag = "ICF_AUTO_FARM",
     Default = false,
     Callback = function(value)
         setFarm(value)
@@ -124,6 +125,7 @@ FarmPanel:CreateToggle({
 
 FarmPanel:CreateToggle({
     Name = "Auto Skill",
+    Flag = "ICF_AUTO_SKILL",
     Default = Config.AutoSkill,
     Callback = function(value)
         Config.AutoSkill = value == true
@@ -213,6 +215,7 @@ end
 
 RedeemPanel:CreateToggle({
     Name = "Auto Redeem (K5)",
+    Flag = "ICF_AUTO_REDEEM",
     Default = false,
     Callback = function(value)
         redeemEnabled = value == true
@@ -263,6 +266,7 @@ end
 
 SafetyPanel:CreateToggle({
     Name = "Anti AFK",
+    Flag = "ICF_ANTI_AFK",
     Default = false,
     Callback = function(value)
         setAntiAfk(value)
