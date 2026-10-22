@@ -61,74 +61,7 @@ diag("INFO", "bootstrap entry started; version=K5-Hub V2")
 local TUTORIAL_PLACE_ID = 76701861705540
 local LOBBY_PLACE_ID = 117533937949084
 
--- Level-cap monitor is handled directly by this bootstrap; no auto_redeem_v2 module is used.
-local LEVEL_STOP = tonumber(Config.LEVEL_STOP)
-if LEVEL_STOP == nil then LEVEL_STOP = 40 end
-
-if LEVEL_STOP > 0 then
-    task.spawn(function()
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local dataModule
-        local leavingAtCap = false
-
-        local function readAuthoritativeLevel()
-            if not dataModule or not dataModule.Parent then
-                dataModule = nil
-                for _, obj in ipairs(ReplicatedStorage:GetDescendants()) do
-                    if obj:IsA("ModuleScript") and obj.Name == "DataUtil" then
-                        dataModule = obj
-                        break
-                    end
-                end
-            end
-
-            if dataModule then
-                local ok, util = pcall(require, dataModule)
-                if ok and type(util) == "table"
-                    and type(util.GetPlayerData) == "function" then
-                    local okData, data = pcall(function()
-                        return util:GetPlayerData(LocalPlayer)
-                    end)
-                    if okData and type(data) == "table"
-                        and type(data.LevelData) == "table" then
-                        local level = tonumber(data.LevelData.Level)
-                        if level then return level end
-                    end
-                end
-            end
-            return tonumber(LocalPlayer:GetAttribute("LG_Level"))
-        end
-
-        while LocalPlayer and LocalPlayer.Parent do
-            local level = readAuthoritativeLevel()
-            if level and level >= LEVEL_STOP and not leavingAtCap then
-                leavingAtCap = true
-                getgenv().IronSoulLevelStopReached = true
-                getgenv().IronSoulLevelStopLevel = level
-                if type(getgenv().IronSoulConfig) == "table" then
-                    getgenv().IronSoulConfig.FARM = "OFF"
-                end
-                diag("INFO", "Level cap reached (" .. tostring(level) .. "); farming stopped; disable teleport queue")
-                getgenv().IronSoulNoAutoContinue = true
-                getgenv().IronSoulManualExecutionOnly = true
-                -- Airflow integration: suppress built-in toast notifications.
-                if game.PlaceId ~= LOBBY_PLACE_ID and workspace:GetAttribute("WorldName") ~= "Lobby" then
-                    local teleported = pcall(function()
-                        game:GetService("TeleportService"):Teleport(LOBBY_PLACE_ID, LocalPlayer)
-                    end)
-                    diag(teleported and "INFO" or "ERROR", teleported
-                        and "Requested return to lobby at level cap"
-                        or "Failed to request lobby teleport at level cap")
-                else
-                    diag("INFO", "Already in lobby at level cap; leave lobby reward maintenance available")
-                end
-                break
-            end
-            task.wait(0.5)
-        end
-    end)
-end
-
+-- Level cap disabled: no automatic level-based stop, lobby teleport, or kick.
 -- Prevent duplicate queued copies in the same server/job.
 do
     local key = tostring(game.PlaceId) .. "|" .. tostring(game.JobId)
@@ -385,14 +318,6 @@ local function loadRaw(path)
         status("MASTER OFF | module blocked: " .. tostring(path))
         return false, "K5-HUB master switch is OFF"
     end
-    if getgenv().IronSoulLevelStopReached
-        and path ~= "systems/performance_booster.lua"
-        and path ~= "systems/lobby.lua"
-        and path ~= "systems/lobby_base_v60_1.lua"
-    then
-        status("LEVEL STOP | farm module load blocked")
-        return false, "level limit reached"
-    end
     status("Loading | " .. tostring(path))
     local ok, source = pcall(game.HttpGet, game, cacheBust(path))
     if not ok or type(source) ~= "string" then
@@ -441,12 +366,6 @@ local function queueBootstrap(reason)
         status("MASTER OFF | teleport continuation not queued")
         return false
     end
-    if getgenv().IronSoulNoAutoContinue == true or getgenv().IronSoulLevelStopReached == true then
-        getgenv().IronSoulManualExecutionOnly = true
-        status("LEVEL STOP | automatic teleport continuation disabled")
-        return false
-    end
-
     -- Use the original executor queue captured before installing the
     -- compatibility wrapper. Re-detecting here could find our own wrapper
     -- and recursively queue itself instead of calling Delta's native API.
@@ -529,13 +448,6 @@ local function v2QueueCompatibility(_legacyPayload)
         status("MASTER OFF | legacy teleport queue blocked")
         return false
     end
-    if getgenv().IronSoulNoAutoContinue == true
-        or getgenv().IronSoulLevelStopReached == true
-    then
-        getgenv().IronSoulManualExecutionOnly = true
-        status("LEVEL STOP | legacy teleport queue blocked")
-        return false
-    end
     return queueBootstrap("legacy lobby queue redirected to V2")
 end
 
@@ -549,7 +461,7 @@ getgenv().IronSoulLoadRaw = loadRaw
 
 -- No automatic pre-queue: a fresh server join must never auto-execute the loader.
 -- Continuation is only allowed when explicitly requested by an active session,
--- and is disabled permanently for this run once the level cap is reached.
+-- and remains governed by the normal manual-session continuation rules.
 
 -- Auto-start the graphics/FPS helper whenever this bootstrap is run on a map.
 -- This does not auto-run the full farm script on a fresh join without the loader.
