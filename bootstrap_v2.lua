@@ -442,6 +442,7 @@ getgenv().IronSoulConfig = config
 
 -- Teleport queues can run before the destination place finishes loading.
 -- Retry fetching/compiling the owned V2 bootstrap rather than silently dying.
+getgenv().IronCodexFarmTeleportContinuation = true
 local lastError
 for attempt = 1, 4 do
     task.wait(attempt == 1 and 2 or 1.5)
@@ -453,6 +454,23 @@ for attempt = 1, 4 do
         if fn then
             local okRun, runErr = pcall(fn)
             if okRun then
+                local uiUrl = "https://raw.githubusercontent.com/frilshiaputri-cmd/IronCodexFarm/main/IronCodexFarm.lua?v=" .. tostring(os.time())
+                local uiFetchOk, uiSource = pcall(function()
+                    return game:HttpGet(uiUrl)
+                end)
+                if uiFetchOk and type(uiSource) == "string" and #uiSource > 0 then
+                    local uiFn, uiCompileErr = loadstring(uiSource)
+                    if uiFn then
+                        local uiRunOk, uiRunErr = pcall(uiFn)
+                        if not uiRunOk then
+                            warn("[IronCodexFarm] UI auto-restore failed: " .. tostring(uiRunErr))
+                        end
+                    else
+                        warn("[IronCodexFarm] UI compile failed: " .. tostring(uiCompileErr))
+                    end
+                else
+                    warn("[IronCodexFarm] UI fetch failed after teleport: " .. tostring(uiSource))
+                end
                 return
             end
             lastError = runErr
@@ -535,7 +553,7 @@ elseif game.PlaceId == LOBBY_PLACE_ID or workspace:GetAttribute("WorldName") == 
 elseif looksLikeDungeon() then
     route, routeName = "systems/combat.lua", "Dungeon"
 else
-    for attempt = 1, 30 do
+    for attempt = 1, 60 do
         task.wait(0.5)
         if game.PlaceId == TUTORIAL_PLACE_ID then
             route, routeName = "systems/tutorial.lua", "Tutorial"
@@ -549,7 +567,7 @@ else
         end
     end
     if not route then
-        local message = "Unknown place after 15s | " .. tostring(game.PlaceId)
+        local message = "Unknown place after 30s | " .. tostring(game.PlaceId)
             .. " | WorldName=" .. tostring(workspace:GetAttribute("WorldName"))
         warn("[K5-Hub V2] " .. message); status(message)
         return
