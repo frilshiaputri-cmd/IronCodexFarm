@@ -34,6 +34,7 @@ local MainPanel = MainTab:CreateGroupbox({Name = "Status", Side = "Left"})
 local MainInfo = MainTab:CreateGroupbox({Name = "Information", Side = "Right"})
 local FarmPanel = FarmTab:CreateGroupbox({Name = "Farm Controls", Side = "Left"})
 local RedeemPanel = RedeemTab:CreateGroupbox({Name = "K5 Auto Redeem", Side = "Left"})
+local RedeemStatsPanel = RedeemTab:CreateGroupbox({Name = "Redeem Statistics", Side = "Right"})
 local SafetyPanel = SettingsTab:CreateGroupbox({Name = "Independent Controls", Side = "Left"})
 
 MainPanel:CreateLabel("IronCodexFarm loaded • press RightShift to hide/show")
@@ -55,7 +56,7 @@ Config.FARM = "OFF"
 Config.TICKETS = Config.TICKETS or "SMART"
 Config.HEADLESS = Config.HEADLESS ~= false
 Config.DEBUG_LOGS = Config.DEBUG_LOGS == true
-Config.LEVEL_STOP = tonumber(Config.LEVEL_STOP) or 40
+Config.LEVEL_STOP = 0 -- level cap disabled
 Config.AUTO_REDEEM = false
 Config.ANTI_AFK = false
 Config.AutoSkill = Config.AutoSkill ~= false
@@ -160,6 +161,15 @@ local redeemEnabled = false
 local redeemRunning = false
 local redeemedCount = 0
 local statusLabel = RedeemPanel:CreateLabel("Status: Idle")
+local statsLabel = RedeemStatsPanel:CreateLabel("Total codes: " .. #Codes .. "\nRequests sent: 0")
+local function updateRedeemStats()
+    local text = ("Total codes: %d | Requests sent: %d"):format(#Codes, redeemedCount)
+    pcall(function()
+        if statsLabel and statsLabel.SetText then statsLabel:SetText(text) end
+    end)
+    print("[IronCodexFarm Redeem Stats] " .. text)
+end
+updateRedeemStats()
 
 local function setRedeemStatus(message)
     pcall(function()
@@ -192,6 +202,7 @@ local function startRedeem()
             local ok, err = redeemOne(code)
             if ok then
                 redeemedCount += 1
+                updateRedeemStats()
             else
                 warn("[IronCodexFarm Redeem] " .. tostring(err))
             end
@@ -222,6 +233,7 @@ RedeemPanel:CreateButton({
     Name = "Reset Redeem Counter",
     Callback = function()
         redeemedCount = 0
+        updateRedeemStats()
         setRedeemStatus("Counter direset")
     end,
 })
