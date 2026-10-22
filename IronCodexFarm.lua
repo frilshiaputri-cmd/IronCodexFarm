@@ -22,7 +22,7 @@ local Window = Airflow:CreateWindow({
     UIScale = 1,
     Density = "Default",
     Size = UDim2.fromOffset(700, 430),
-    ConfigurationSaving = {Enabled = true, FolderName = "IronCodexFarm"},
+    ConfigurationSaving = {Enabled = false, FolderName = "IronCodexFarm"},
 })
 
 local MainTab = Window:CreateTab({Name = "Main", Icon = "house"})
@@ -40,7 +40,7 @@ local SafetyPanel = SettingsTab:CreateGroupbox({Name = "Independent Controls", S
 MainPanel:CreateLabel("IronCodexFarm loaded • press RightShift to hide/show")
 MainInfo:CreateParagraph({
     Title = "Source separation",
-    Content = "Auto Farm uses IronSoul Kaitun V2. Auto Redeem uses the K5 repository. Each feature has its own toggle.",
+    Content = "Auto Farm uses the Kaitun V2 bootstrap. Auto Redeem uses K5 codes. Toggles are independent; enabling Redeem does not start Farm.",
 })
 
 local function notify(title, message)
@@ -51,12 +51,12 @@ end
 
 local Config = getgenv().IronSoulConfig
 if type(Config) ~= "table" then Config = {} end
-Config.FPS_CAP = Config.FPS_CAP or 60
+-- FPS Booster/FPS cap disabled.
 Config.FARM = "OFF"
 Config.TICKETS = Config.TICKETS or "SMART"
 Config.HEADLESS = Config.HEADLESS ~= false
 Config.DEBUG_LOGS = Config.DEBUG_LOGS == true
-Config.LEVEL_STOP = 0 -- level cap disabled
+Config.LEVEL_STOP = 0 -- level cap disabled in the custom Kaitun V2 bootstrap
 Config.AUTO_REDEEM = false
 Config.ANTI_AFK = false
 Config.AutoSkill = Config.AutoSkill ~= false
@@ -116,7 +116,6 @@ end
 
 FarmPanel:CreateToggle({
     Name = "Auto Farm (IronSoul V2)",
-    Flag = "IronCodexAutoFarm",
     Default = false,
     Callback = function(value)
         setFarm(value)
@@ -125,7 +124,6 @@ FarmPanel:CreateToggle({
 
 FarmPanel:CreateToggle({
     Name = "Auto Skill",
-    Flag = "IronCodexAutoSkill",
     Default = Config.AutoSkill,
     Callback = function(value)
         Config.AutoSkill = value == true
@@ -215,11 +213,11 @@ end
 
 RedeemPanel:CreateToggle({
     Name = "Auto Redeem (K5)",
-    Flag = "IronCodexAutoRedeem",
     Default = false,
     Callback = function(value)
         redeemEnabled = value == true
         Config.AUTO_REDEEM = redeemEnabled
+        -- This callback intentionally does not call setFarm or change IronSoulMasterEnabled.
         if redeemEnabled then
             setRedeemStatus("Memulai • " .. #Codes .. " kode")
             startRedeem()
@@ -265,7 +263,6 @@ end
 
 SafetyPanel:CreateToggle({
     Name = "Anti AFK",
-    Flag = "IronCodexAntiAFK",
     Default = false,
     Callback = function(value)
         setAntiAfk(value)
@@ -273,6 +270,7 @@ SafetyPanel:CreateToggle({
 })
 
 SafetyPanel:CreateLabel("V2 announcements are disabled in this repository bootstrap.")
+SafetyPanel:CreateLabel("FPS Booster removed. Auto Farm and Auto Redeem have independent toggles.")
 SafetyPanel:CreateLabel("Redeem delay: 16.1 seconds per code (K5 source setting).")
 
 Window:Notify({Title = "IronCodexFarm", Content = "Airflow UI loaded.", Duration = 3})
