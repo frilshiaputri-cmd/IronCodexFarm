@@ -63,6 +63,9 @@ Config.AutoSkill = Config.AutoSkill ~= false
 getgenv().IronSoulConfig = Config
 getgenv().IronSoulMasterEnabled = false
 getgenv().IronSoulStopRequested = true
+-- Clear level-stop flags persisted by older V2 executions.
+getgenv().IronSoulLevelStopReached = false
+getgenv().IronSoulLevelStopLevel = nil
 
 local farmBootstrapped = false
 local farmEnabled = false
