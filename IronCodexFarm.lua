@@ -59,7 +59,7 @@ end
 Config.TICKETS = Config.TICKETS or "SMART"
 Config.HEADLESS = Config.HEADLESS ~= false
 Config.DEBUG_LOGS = Config.DEBUG_LOGS == true
-Config.LEVEL_STOP = 0 -- level cap disabled in the custom Kaitun V2 bootstrap
+Config.LEVEL_STOP = 40 -- stop Auto Farm at level 40 and return to lobby
 Config.AUTO_REDEEM = false
 Config.ANTI_AFK = Config.ANTI_AFK == true
 Config.AutoSkill = Config.AutoSkill ~= false
@@ -71,9 +71,11 @@ else
     getgenv().IronSoulMasterEnabled = Config.FARM ~= "OFF"
     getgenv().IronSoulStopRequested = Config.FARM == "OFF"
 end
--- Clear level-stop flags persisted by older V2 executions.
-getgenv().IronSoulLevelStopReached = false
-getgenv().IronSoulLevelStopLevel = nil
+-- Clear stale level-stop flags only on a fresh/manual session; preserve them during teleport restore.
+if not isTeleportRestore then
+    getgenv().IronSoulLevelStopReached = false
+    getgenv().IronSoulLevelStopLevel = nil
+end
 
 local farmBootstrapped = isTeleportRestore
 local farmEnabled = isTeleportRestore and Config.FARM ~= "OFF"
@@ -123,6 +125,11 @@ local function setFarm(enabled)
         end
         notify("Auto Farm", "Dimatikan.")
     end
+end
+
+-- Bootstrap can call this when level 40 is reached to switch the UI toggle off.
+getgenv().IronCodexFarmSetFarm = function(enabled)
+    setFarm(enabled == true)
 end
 
 FarmPanel:CreateToggle({
