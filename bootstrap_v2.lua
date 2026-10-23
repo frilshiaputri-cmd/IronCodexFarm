@@ -600,9 +600,7 @@ if LocalPlayer then
             if not autoTeleportQueueArmed then return end
             if state == Enum.TeleportState.Started then
                 autoTeleportQueueArmed = false
-                task.defer(function()
-                    queueBootstrap("automatic map/Place change")
-                end)
+                queueBootstrap("automatic map/Place change")
             end
         end)
     end)
