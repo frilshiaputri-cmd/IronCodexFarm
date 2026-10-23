@@ -177,11 +177,13 @@ local function runClaimCycle()
     if Controller.ClaimBusy or not Controller.ClaimEnabled then return end
     Controller.ClaimBusy = true
     task.spawn(function()
-        if not inLobby() then
-            log("Auto Claim All menunggu di Lobby.")
-        elseif level() < 40 then
-            log("Auto Claim All menunggu Level 40; level saat ini " .. tostring(level()))
-        else
+        -- Wait while the toggle remains ON until the player is in the lobby at Lv40+.
+        while Controller.ClaimEnabled and not Controller.Destroyed do
+            if inLobby() and level() >= 40 then break end
+            log("Auto Claim All menunggu Lobby / Level 40; level saat ini " .. tostring(level()))
+            task.wait(2)
+        end
+        if Controller.ClaimEnabled and not Controller.Destroyed then
             log("Memulai siklus klaim mandiri.")
             pcall(claimDailyQuest)
             pcall(claimSeasonPass)
