@@ -82,7 +82,19 @@ local farmBootstrapped = isTeleportRestore
 local farmEnabled = isTeleportRestore and Config.FARM ~= "OFF"
 local function setFarm(enabled)
     enabled = enabled == true
-    if enabled == farmEnabled then return end
+    if enabled == farmEnabled then
+        -- On teleport restore, the V2 bootstrap may have started before the UI.
+        -- Re-assert the master state once the UI is ready instead of returning early.
+        if enabled then
+            Config.FARM = Config.FARM ~= "OFF" and Config.FARM or (getgenv().IronSoulPreviousFarmMode or "NEWBIE")
+            getgenv().IronSoulStopRequested = false
+            getgenv().IronSoulMasterEnabled = true
+            if type(getgenv().IronSoulSetMasterEnabled) == "function" then
+                pcall(getgenv().IronSoulSetMasterEnabled, true)
+            end
+        end
+        return
+    end
     farmEnabled = enabled
 
     if enabled then
@@ -298,3 +310,16 @@ SafetyPanel:CreateLabel("Redeem delay: 16.1 seconds per code (K5 source setting)
 
 Window:Notify({Title = "IronCodexFarm", Content = "Airflow UI loaded.", Duration = 3})
 print("[IronCodexFarm] Airflow UI loaded")
+
+-- On a queued map/Place teleport, wait until the Airflow table exists before
+-- re-asserting Auto Farm. Fresh/manual starts still require the user toggle.
+if isTeleportRestore then
+    task.defer(function()
+        task.wait(0.5)
+        local playerGui = LocalPlayer:FindFirstChildOfClass("PlayerGui")
+        if playerGui and Window then
+            setFarm(true)
+            notify("Auto Farm", "UI selesai dimuat; melanjutkan Auto Farm.")
+        end
+    end)
+end
