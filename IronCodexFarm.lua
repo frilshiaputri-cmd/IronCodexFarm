@@ -53,6 +53,7 @@ local Config = getgenv().IronSoulConfig
 if type(Config) ~= "table" then Config = {} end
 -- FPS Booster/FPS cap disabled.
 local isTeleportRestore = getgenv().IronCodexFarmTeleportContinuation == true
+getgenv().IronCodexFarmTeleportContinuation = nil
 if not isTeleportRestore then
     Config.FARM = "OFF"
 end
