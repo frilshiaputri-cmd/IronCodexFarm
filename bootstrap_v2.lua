@@ -541,6 +541,9 @@ if not uiLoaded then
     end)
     return
 end
+-- The UI consumes this marker during its own initialization; restore it so the
+-- V2 bootstrap preserves teleport-continuation state (including level-stop flags).
+getgenv().IronCodexFarmTeleportContinuation = true
 local lastError
 for attempt = 1, 4 do
     task.wait(attempt == 1 and 2 or 1.5)
