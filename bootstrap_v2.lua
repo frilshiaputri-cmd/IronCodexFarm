@@ -16,7 +16,7 @@ local Config = getgenv().IronSoulConfig
 -- IronCodexFarm: clear stale level-stop state left by older V2 sessions.
 getgenv().IronSoulLevelStopReached = false
 getgenv().IronSoulLevelStopLevel = nil
-if type(Config) == "table" then Config.LEVEL_STOP = 0 end
+if type(Config) == "table" then Config.LEVEL_STOP = 40 end
 local VERSION = "K5_HUB_V2_AUTOEXEC_RETRY_20261021_3"
 local BASE =
     "https://raw.githubusercontent.com/"
@@ -65,7 +65,76 @@ diag("INFO", "bootstrap entry started; version=K5-Hub V2")
 local TUTORIAL_PLACE_ID = 76701861705540
 local LOBBY_PLACE_ID = 117533937949084
 
--- IronCodexFarm patch: level cap disabled as requested.
+local LEVEL_STOP = 40
+local levelStopTriggered = false
+
+local function readPlayerLevel()
+    local level = tonumber(LocalPlayer and LocalPlayer:GetAttribute("LG_Level"))
+    if level then return level end
+    local replicatedStorage = game:GetService("ReplicatedStorage")
+    for _, obj in ipairs(replicatedStorage:GetDescendants()) do
+        if obj:IsA("ModuleScript") and obj.Name == "DataUtil" then
+            local ok, util = pcall(require, obj)
+            if ok and type(util) == "table" and type(util.GetPlayerData) == "function" then
+                local okData, data = pcall(function()
+                    return util:GetPlayerData(LocalPlayer)
+                end)
+                if okData and type(data) == "table" and type(data.LevelData) == "table" then
+                    level = tonumber(data.LevelData.Level)
+                    if level then return level end
+                end
+            end
+        end
+    end
+    return nil
+end
+
+local function enforceLevelStop(level)
+    if levelStopTriggered or not level or level < LEVEL_STOP then return end
+    levelStopTriggered = true
+    local env = getgenv()
+    env.IronSoulLevelStopReached = true
+    env.IronSoulLevelStopLevel = level
+    env.IronSoulStopRequested = true
+    env.IronSoulMasterEnabled = false
+    if type(env.IronSoulConfig) == "table" then
+        env.IronSoulConfig.LEVEL_STOP = LEVEL_STOP
+        env.IronSoulConfig.FARM = "OFF"
+    end
+    diag("WARN", "LEVEL CAP reached Lv" .. tostring(level) .. "/" .. tostring(LEVEL_STOP) .. "; Auto Farm OFF; returning to lobby without kick")
+    status("LEVEL CAP | Lv" .. tostring(level) .. "/40 | Auto Farm OFF | returning to lobby")
+
+    if type(env.IronCodexFarmSetFarm) == "function" then
+        pcall(env.IronCodexFarmSetFarm, false, "level-cap")
+    end
+
+    local isLobby = game.PlaceId == LOBBY_PLACE_ID or workspace:GetAttribute("WorldName") == "Lobby"
+    if not isLobby and LocalPlayer and LocalPlayer.Parent then
+        task.spawn(function()
+            task.wait(0.5)
+            local ok, err = pcall(function()
+                game:GetService("TeleportService"):Teleport(LOBBY_PLACE_ID, LocalPlayer)
+            end)
+            if not ok then
+                diag("ERROR", "Level-cap lobby teleport failed: " .. tostring(err))
+                status("LEVEL CAP | teleport ke lobby gagal; Auto Farm tetap OFF")
+            end
+        end)
+    end
+end
+
+task.spawn(function()
+    while LocalPlayer and LocalPlayer.Parent and not levelStopTriggered do
+        local level = readPlayerLevel()
+        if level and level >= LEVEL_STOP then
+            enforceLevelStop(level)
+            break
+        end
+        task.wait(1)
+    end
+end)
+
+-- IronCodexFarm: stop Auto Farm at level 40; return to lobby without kicking.
 -- Prevent duplicate queued copies in the same server/job.
 do
     local key = tostring(game.PlaceId) .. "|" .. tostring(game.JobId)
@@ -310,18 +379,8 @@ local function normalizeSource(source)
 end
 
 local function stripLevelCapGuard(source, path)
-    if path == "systems/combat.lua" then
-        local first = string.find(source, "-- HARD LEVEL CAP:", 1, true)
-        local last = string.find(source, "-- World1 V61.15 remains frozen/stable.", first or 1, true)
-        if first and last and last > first then
-            source = string.sub(source, 1, first - 1) .. string.sub(source, last)
-        end
-    elseif path == "systems/lobby.lua" then
-        local first = string.find(source, "-- HARD LEVEL CAP: never schedule another dungeon", 1, true)
-        local last = string.find(source, "-- Resolve any Cave material delta", first or 1, true)
-        if first and last and last > first then
-            source = string.sub(source, 1, first - 1) .. string.sub(source, last)
-        end
+    if path == "systems/combat.lua" or path == "systems/lobby.lua" then
+        -- Keep Kaitun V2 level-cap guards intact.
     elseif path == "systems/lobby_base_v60_1.lua" then
         -- Always use normal queue/progression flow; remove the old Lv40-only lobby branch.
         local first = string.find(source, "-- At the level cap, allow Daily Quest-only maintenance", 1, true)
@@ -353,8 +412,6 @@ end
                 .. "-- IronCodexFarm: level-based kick disabled.\n\n"
                 .. string.sub(source, last)
         end
-    elseif path == "systems/auto_skill.lua" then
-        source = string.gsub(source, "if not getgenv%(%).IronSoulLevelStopReached%s+and%s+", "if ")
     end
     return source
 end
