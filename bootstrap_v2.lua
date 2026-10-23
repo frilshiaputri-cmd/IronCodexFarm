@@ -13,9 +13,11 @@ getgenv().IronSoulConfig =
     }
 
 local Config = getgenv().IronSoulConfig
--- IronCodexFarm: clear stale level-stop state left by older V2 sessions.
-getgenv().IronSoulLevelStopReached = false
-getgenv().IronSoulLevelStopLevel = nil
+-- Preserve the level-stop state while a queued teleport continuation is booting.
+if getgenv().IronCodexFarmTeleportContinuation ~= true then
+    getgenv().IronSoulLevelStopReached = false
+    getgenv().IronSoulLevelStopLevel = nil
+end
 if type(Config) == "table" then Config.LEVEL_STOP = 40 end
 local VERSION = "K5_HUB_V2_AUTOEXEC_RETRY_20261021_3"
 local BASE =
