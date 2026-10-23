@@ -505,8 +505,42 @@ local config = {
 getgenv().IronSoulConfig = config
 
 -- Teleport queues can run before the destination place finishes loading.
--- Retry fetching/compiling the owned V2 bootstrap rather than silently dying.
+-- Load the full Airflow table first; Auto Farm must not start before this succeeds.
 getgenv().IronCodexFarmTeleportContinuation = true
+getgenv().IronCodexFarmUILoaded = false
+local uiLoaded = false
+local uiLastError
+for uiAttempt = 1, 4 do
+    task.wait(uiAttempt == 1 and 2 or 1.5)
+    local uiUrl = "https://raw.githubusercontent.com/frilshiaputri-cmd/IronCodexFarm/main/IronCodexFarm.lua?v=" .. tostring(os.time()) .. "&attempt=" .. tostring(uiAttempt)
+    local uiFetchOk, uiSource = pcall(function()
+        return game:HttpGet(uiUrl)
+    end)
+    if uiFetchOk and type(uiSource) == "string" and #uiSource > 0 then
+        local uiFn, uiCompileErr = loadstring(uiSource)
+        if uiFn then
+            local uiRunOk, uiRunErr = pcall(uiFn)
+            if uiRunOk and getgenv().IronCodexFarmUILoaded == true then
+                uiLoaded = true
+                break
+            end
+            uiLastError = uiRunErr or "UI did not signal completed load"
+        else
+            uiLastError = uiCompileErr
+        end
+    else
+        uiLastError = uiSource or "empty UI response"
+    end
+end
+if not uiLoaded then
+    warn("[IronCodexFarm] UI failed to load; Auto Farm remains OFF: " .. tostring(uiLastError))
+    pcall(function()
+        if type(writefile) == "function" then
+            writefile("IronCodexFarm_UI_Load_Error.txt", tostring(uiLastError))
+        end
+    end)
+    return
+end
 local lastError
 for attempt = 1, 4 do
     task.wait(attempt == 1 and 2 or 1.5)
@@ -518,23 +552,7 @@ for attempt = 1, 4 do
         if fn then
             local okRun, runErr = pcall(fn)
             if okRun then
-                local uiUrl = "https://raw.githubusercontent.com/frilshiaputri-cmd/IronCodexFarm/main/IronCodexFarm.lua?v=" .. tostring(os.time())
-                local uiFetchOk, uiSource = pcall(function()
-                    return game:HttpGet(uiUrl)
-                end)
-                if uiFetchOk and type(uiSource) == "string" and #uiSource > 0 then
-                    local uiFn, uiCompileErr = loadstring(uiSource)
-                    if uiFn then
-                        local uiRunOk, uiRunErr = pcall(uiFn)
-                        if not uiRunOk then
-                            warn("[IronCodexFarm] UI auto-restore failed: " .. tostring(uiRunErr))
-                        end
-                    else
-                        warn("[IronCodexFarm] UI compile failed: " .. tostring(uiCompileErr))
-                    end
-                else
-                    warn("[IronCodexFarm] UI fetch failed after teleport: " .. tostring(uiSource))
-                end
+                -- UI was successfully loaded before bootstrap; safe to continue.
                 return
             end
             lastError = runErr
