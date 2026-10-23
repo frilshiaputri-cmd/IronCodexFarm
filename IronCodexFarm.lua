@@ -62,6 +62,8 @@ Config.HEADLESS = Config.HEADLESS ~= false
 Config.DEBUG_LOGS = Config.DEBUG_LOGS == true
 Config.LEVEL_STOP = 40 -- stop Auto Farm at level 40 and return to lobby
 Config.AUTO_REDEEM = false
+Config.AUTO_SEASON_SPIN = Config.AUTO_SEASON_SPIN == true
+Config.AUTO_CLAIM_ALL = Config.AUTO_CLAIM_ALL == true
 Config.ANTI_AFK = Config.ANTI_AFK == true
 Config.AutoSkill = Config.AutoSkill ~= false
 Config.AutoSwitchWeapon = false -- IronCodexFarm: disable automatic weapon switching
@@ -259,6 +261,28 @@ RedeemPanel:CreateToggle({
         else
             setRedeemStatus("OFF")
         end
+    end,
+})
+
+RedeemPanel:CreateToggle({
+    Name = "Auto Spin Season Tickets (IronSoul V2)",
+    Flag = "ICF_AUTO_SEASON_SPIN",
+    Default = Config.AUTO_SEASON_SPIN == true,
+    Callback = function(value)
+        Config.AUTO_SEASON_SPIN = value == true
+        getgenv().IronSoulConfig = Config
+        notify("Season Ticket Spin", value and "ON • V2 akan menggunakan SeasonTicket di lobby." or "OFF • SeasonTicket tidak akan digunakan.")
+    end,
+})
+
+RedeemPanel:CreateToggle({
+    Name = "Auto Claim All (IronSoul V2)",
+    Flag = "ICF_AUTO_CLAIM_ALL",
+    Default = Config.AUTO_CLAIM_ALL == true,
+    Callback = function(value)
+        Config.AUTO_CLAIM_ALL = value == true
+        getgenv().IronSoulConfig = Config
+        notify("Auto Claim All", value and "ON • V2 akan mencoba reward yang didukung saat di lobby Lv40+." or "OFF • klaim tambahan dinonaktifkan.")
     end,
 })
 
