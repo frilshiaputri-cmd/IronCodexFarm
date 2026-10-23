@@ -1,7 +1,7 @@
 -- IronCodexFarm | Airflow UI edition
--- Auto Farm source: frilshiaputri-cmd/Ironsoulkaitun V2
--- Auto Redeem source: frilshiaputri-cmd/K5 (not the V2 redeem module)
--- Built-in V2 toast announcements are disabled in this repository's bootstrap_v2.lua.
+-- Auto Farm: IronSoul V2 bootstrap (separate controller)
+-- Auto Redeem: K5 code list
+-- Season Spin + Claim All: standalone IronCodexFarm reward controller.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -14,7 +14,7 @@ getgenv().__Airflow = Airflow
 
 local Window = Airflow:CreateWindow({
     Name = "Sc By Frilshia",
-    LoadingSubtitle = "Airflow UI • IronSoul V2 + K5 Redeem",
+    LoadingSubtitle = "Airflow UI • Independent Farm / Redeem / Rewards",
     Icon = "rbxassetid://106988550042558",
     ToggleUIKeybind = "RightShift",
     Backdrop = {Weather = "None", Tint = 0.45},
@@ -40,7 +40,7 @@ local SafetyPanel = SettingsTab:CreateGroupbox({Name = "Independent Controls", S
 MainPanel:CreateLabel("Sc By Frilshia loaded • press RightShift to hide/show")
 MainInfo:CreateParagraph({
     Title = "Source separation",
-    Content = "Auto Farm uses the Kaitun V2 bootstrap. Auto Redeem uses K5 codes. Toggles are independent; enabling Redeem does not start Farm.",
+    Content = "Auto Farm uses its own toggle. K5 Redeem and the standalone Season Spin / Claim All controller run independently; reward toggles do not start Auto Farm.",
 })
 
 local function notify(title, message)
@@ -68,6 +68,24 @@ Config.ANTI_AFK = Config.ANTI_AFK == true
 Config.AutoSkill = Config.AutoSkill ~= false
 Config.AutoSwitchWeapon = false -- IronCodexFarm: disable automatic weapon switching
 getgenv().IronSoulConfig = Config
+
+-- Standalone reward automation owned by IronCodexFarm; it does not load V2.
+local RewardAutomation
+do
+    local ok, result = pcall(function()
+        local source = game:HttpGet(REPO_RAW .. "systems/reward_automation.lua")
+        assert(type(source) == "string" and #source > 0, "reward_automation.lua kosong")
+        local fn, compileErr = loadstring(source)
+        assert(fn, compileErr or "Gagal compile reward_automation.lua")
+        return fn()
+    end)
+    if ok and type(result) == "table" then
+        RewardAutomation = result
+    else
+        warn("[IronCodexFarm] Reward automation gagal dimuat: " .. tostring(result))
+    end
+end
+
 if not isTeleportRestore then
     getgenv().IronSoulMasterEnabled = false
     getgenv().IronSoulStopRequested = true
@@ -265,24 +283,34 @@ RedeemPanel:CreateToggle({
 })
 
 RedeemPanel:CreateToggle({
-    Name = "Auto Spin Season Tickets (IronSoul V2)",
+    Name = "Auto Spin Season Tickets (IronCodexFarm)",
     Flag = "ICF_AUTO_SEASON_SPIN",
     Default = Config.AUTO_SEASON_SPIN == true,
     Callback = function(value)
         Config.AUTO_SEASON_SPIN = value == true
         getgenv().IronSoulConfig = Config
-        notify("Season Ticket Spin", value and "ON • V2 akan menggunakan SeasonTicket di lobby." or "OFF • SeasonTicket tidak akan digunakan.")
+        if RewardAutomation then
+            RewardAutomation:SetSpin(value)
+            notify("Season Ticket Spin", value and "ON • sistem mandiri IronCodexFarm aktif." or "OFF • spin otomatis dihentikan.")
+        else
+            notify("Season Ticket Spin", "Sistem gagal dimuat; periksa console.")
+        end
     end,
 })
 
 RedeemPanel:CreateToggle({
-    Name = "Auto Claim All (IronSoul V2)",
+    Name = "Auto Claim All (IronCodexFarm)",
     Flag = "ICF_AUTO_CLAIM_ALL",
     Default = Config.AUTO_CLAIM_ALL == true,
     Callback = function(value)
         Config.AUTO_CLAIM_ALL = value == true
         getgenv().IronSoulConfig = Config
-        notify("Auto Claim All", value and "ON • V2 akan mencoba reward yang didukung saat di lobby Lv40+." or "OFF • klaim tambahan dinonaktifkan.")
+        if RewardAutomation then
+            RewardAutomation:SetClaimAll(value)
+            notify("Auto Claim All", value and "ON • sistem mandiri berjalan di Lobby pada Level 40+." or "OFF • klaim tambahan dinonaktifkan.")
+        else
+            notify("Auto Claim All", "Sistem gagal dimuat; periksa console.")
+        end
     end,
 })
 
@@ -332,7 +360,7 @@ SafetyPanel:CreateToggle({
 SafetyPanel:CreateLabel("V2 announcements are disabled in this repository bootstrap.")
 SafetyPanel:CreateLabel("FPS Booster and automatic weapon switching are disabled.")
 SafetyPanel:CreateLabel("Auto Farm OFF pauses IronSoul V2 combat; ON resumes it.")
-SafetyPanel:CreateLabel("Auto Skill toggle controls V2 native skill casting.")
+SafetyPanel:CreateLabel("Auto Skill controls the farm skill system; reward automation is standalone.")
 SafetyPanel:CreateLabel("Auto Farm and Auto Redeem have independent toggles.")
 SafetyPanel:CreateLabel("Redeem delay: 16.1 seconds per code (K5 source setting).")
 
