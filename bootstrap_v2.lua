@@ -10,6 +10,7 @@ getgenv().IronSoulConfig =
         TICKETS = "SMART",
         HEADLESS = true,
         AutoSkill = true,
+        AutoSwitchWeapon = false,
     }
 
 local Config = getgenv().IronSoulConfig
@@ -501,6 +502,7 @@ local config = {
     DEBUG_LOGS = %s,
     LEVEL_STOP = %s,
     AutoSkill = %s,
+    AutoSwitchWeapon = false,
 }
 getgenv().IronSoulConfig = config
 
