@@ -64,6 +64,7 @@ Config.LEVEL_STOP = 40 -- stop Auto Farm at level 40 and return to lobby
 Config.AUTO_REDEEM = false
 Config.ANTI_AFK = Config.ANTI_AFK == true
 Config.AutoSkill = Config.AutoSkill ~= false
+Config.AutoSwitchWeapon = false -- IronCodexFarm: disable automatic weapon switching
 getgenv().IronSoulConfig = Config
 if not isTeleportRestore then
     getgenv().IronSoulMasterEnabled = false
@@ -305,7 +306,8 @@ SafetyPanel:CreateToggle({
 })
 
 SafetyPanel:CreateLabel("V2 announcements are disabled in this repository bootstrap.")
-SafetyPanel:CreateLabel("FPS Booster removed. Auto Farm and Auto Redeem have independent toggles.")
+SafetyPanel:CreateLabel("FPS Booster and automatic weapon switching are disabled.")
+SafetyPanel:CreateLabel("Auto Farm and Auto Redeem have independent toggles.")
 SafetyPanel:CreateLabel("Redeem delay: 16.1 seconds per code (K5 source setting).")
 
 -- Set this only after all tabs, panels, and controls have been created.
