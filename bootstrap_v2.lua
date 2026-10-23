@@ -102,7 +102,9 @@ local function enforceLevelStop(level)
         env.IronSoulConfig.FARM = "OFF"
     end
     diag("WARN", "LEVEL CAP reached Lv" .. tostring(level) .. "/" .. tostring(LEVEL_STOP) .. "; Auto Farm OFF; returning to lobby without kick")
-    status("LEVEL CAP | Lv" .. tostring(level) .. "/40 | Auto Farm OFF | returning to lobby")
+    if type(env.IronSoulStatus) == "function" then
+        pcall(env.IronSoulStatus, "LEVEL CAP | Lv" .. tostring(level) .. "/40 | Auto Farm OFF | returning to lobby")
+    end
 
     if type(env.IronCodexFarmSetFarm) == "function" then
         pcall(env.IronCodexFarmSetFarm, false, "level-cap")
@@ -117,7 +119,9 @@ local function enforceLevelStop(level)
             end)
             if not ok then
                 diag("ERROR", "Level-cap lobby teleport failed: " .. tostring(err))
-                status("LEVEL CAP | teleport ke lobby gagal; Auto Farm tetap OFF")
+                if type(env.IronSoulStatus) == "function" then
+                    pcall(env.IronSoulStatus, "LEVEL CAP | teleport ke lobby gagal; Auto Farm tetap OFF")
+                end
             end
         end)
     end
