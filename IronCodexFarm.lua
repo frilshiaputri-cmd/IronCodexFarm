@@ -156,7 +156,7 @@ FarmPanel:CreateToggle({
 })
 
 FarmPanel:CreateToggle({
-    Name = "Auto Skill",
+    Name = "Auto Skill (IronSoul V2)",
     Flag = "ICF_AUTO_SKILL",
     Default = Config.AutoSkill,
     Callback = function(value)
@@ -307,6 +307,8 @@ SafetyPanel:CreateToggle({
 
 SafetyPanel:CreateLabel("V2 announcements are disabled in this repository bootstrap.")
 SafetyPanel:CreateLabel("FPS Booster and automatic weapon switching are disabled.")
+SafetyPanel:CreateLabel("Auto Farm OFF pauses IronSoul V2 combat; ON resumes it.")
+SafetyPanel:CreateLabel("Auto Skill toggle controls V2 native skill casting.")
 SafetyPanel:CreateLabel("Auto Farm and Auto Redeem have independent toggles.")
 SafetyPanel:CreateLabel("Redeem delay: 16.1 seconds per code (K5 source setting).")
 
