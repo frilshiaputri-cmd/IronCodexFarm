@@ -188,28 +188,132 @@ FarmPanel:CreateToggle({
     end,
 })
 
--- Codes copied from the user's K5 repository K5_HUB_REDEEM_UPDATED.txt.
+-- K5 Auto Redeem integration: code list synced from K5_HUB_REDEEM_UPDATED.txt.
 local Codes = {
-    "runekify", "Dray28", "RIKUSOULS", "Ahjughh", "T3nsei", "Ghifa", "Sukunay",
-    "MERGIXS", "SIGURIH", "CA2", "Lulzsec", "druscxlla", "MAHAFEY", "LALAGANG",
-    "Luthador2121", "AAM", "ToadPlaysGamesTTV", "Uzi", "TT_Mentally_ill_K.N",
-    "luknojo", "Zeny", "Maple", "Fujiesane", "VeeruChan", "HELOS", "LezoCr",
-    "ARES", "Laplace", "Deco", "dasher", "Nyxaria", "ProfGab", "SUB2BLAZESTARS",
-    "Nothing", "Dism", "FannTzy", "Darkfeniks", "Sneptuno", "SUPER MBUD", "Marcell",
-    "Markbhatra", "DrekathSenpai", "smiley", "Sine", "GT_HANNI", "Erijero",
-    "DanoNano", "WettySNK", "obe", "Dekday", "Qyuu", "Gwynne", "PapiJoy",
-    "Taalonely", "Darren", "MADUNN", "Clipz7112", "omjiwa", "PaPaX", "Ryu",
-    "DEI_Yumeko", "Chrisss", "Gryffin", "ARKANGHEL", "tony_vt", "Ryokenn",
-    "ReyPomuchi", "Freca", "Shan", "Bebek", "Les", "SEYUnever", "Izumi_Senpai",
-    "Staysmoovey", "NisardHelpOnlyWoman", "Kiota2", "LZZ_019BEST", "PepCalcot",
-    "Astral", "Lifauzi", "Shirooo0312_IRONSOUL", "Ewaa", "FRanime_OFFICIEL",
-    "WerNate", "Ascart", "Sweetiee24", "Monarch", "Aetherix", "SUB2MULTIST789",
-    "RENZEI100", "Skywinter86", "Heso", "Ghelayyy", "Heartguard", "ZARGAKSTONE",
-    "RaykorBR", "EJ(YURU)", "Rujika", "Giovanni_GG", "GRAYWOLF", "SUB_TO_ITS_HUNTER",
-    "Alex._.SINN", "AbuelaCalcot", "ChakGIM", "Zhien", "SamudraSelatan", "qzq",
-    "BaraWell", "Horrortoki", "Vinxies", "minamee", "IRONSOULWEEKEND27",
-    "S4ENDLESSTOWER", "TRADEISLANDUPDATE", "North", "NEXCU", "EvLCrys",
-    "Joy_Blox", "DEYMMM", "DD_Noir", "Maple_13xNoir"
+    "runekify",
+    "Dray28",
+    "RIKUSOULS",
+    "Ahjughh",
+    "T3nsei",
+    "Ghifa",
+    "Sukunay",
+    "MERGIXS",
+    "SIGURIH",
+    "CA2",
+    "Lulzsec",
+    "druscxlla",
+    "MAHAFEY",
+    "LALAGANG",
+    "Luthador2121",
+    "AAM",
+    "ToadPlaysGamesTTV",
+    "Uzi",
+    "TT_Mentally_ill_K.N",
+    "luknojo",
+    "Zeny",
+    "Maple",
+    "Fujiesane",
+    "VeeruChan",
+    "HELOS",
+    "LezoCr",
+    "ARES",
+    "Laplace",
+    "Deco",
+    "dasher",
+    "Nyxaria",
+    "ProfGab",
+    "SUB2BLAZESTARS",
+    "Nothing",
+    "Dism",
+    "FannTzy",
+    "Darkfeniks",
+    "Sneptuno",
+    "SUPER MBUD",
+    "Marcell",
+    "Markbhatra",
+    "DrekathSenpai",
+    "smiley",
+    "Sine",
+    "GT_HANNI",
+    "Erijero",
+    "DanoNano",
+    "WettySNK",
+    "obe",
+    "Dekday",
+    "Qyuu",
+    "Gwynne",
+    "PapiJoy",
+    "Taalonely",
+    "Darren",
+    "MADUNN",
+    "Clipz7112",
+    "omjiwa",
+    "PaPaX",
+    "Ryu",
+    "DEI_Yumeko",
+    "Chrisss",
+    "Gryffin",
+    "ARKANGHEL",
+    "tony_vt",
+    "Ryokenn",
+    "ReyPomuchi",
+    "Freca",
+    "Shan",
+    "Bebek",
+    "Les",
+    "SEYUnever",
+    "Izumi_Senpai",
+    "Staysmoovey",
+    "NisardHelpOnlyWoman",
+    "Kiota2",
+    "LZZ_019BEST",
+    "PepCalcot",
+    "Astral",
+    "Lifauzi",
+    "Shirooo0312_IRONSOUL",
+    "Ewaa",
+    "FRanime_OFFICIEL",
+    "WerNate",
+    "Ascart",
+    "Sweetiee24",
+    "Monarch",
+    "Aetherix",
+    "SUB2MULTIST789",
+    "RENZEI100",
+    "Skywinter86",
+    "Heso",
+    "Ghelayyy",
+    "Heartguard",
+    "ZARGAKSTONE",
+    "RaykorBR",
+    "EJ(YURU)",
+    "Rujika",
+    "Giovanni_GG",
+    "GRAYWOLF",
+    "SUB_TO_ITS_HUNTER",
+    "Alex._.SINN",
+    "AbuelaCalcot",
+    "ChakGIM",
+    "Zhien",
+    "LacilBlueBerry",
+    "SamudraSelatan",
+    "qzq",
+    "BaraWell",
+    "Horrortoki",
+    "Vinxies",
+    "minamee",
+    "IRONSOULWEEKEND27",
+    "S4ENDLESSTOWER",
+    "TRADEISLANDUPDATE",
+    "North",
+    "NEXCU",
+    "EvLCrys",
+    "Joy_Blox",
+    "DEYMMM",
+    "DD_Noir",
+    "Maple_13xNoir",
+    "IRONSOULWEEKEND28",
+    "BOWANDSKILLTREE",
 }
 local REDEEM_DELAY = 16.1
 local redeemEnabled = false
@@ -234,12 +338,20 @@ local function setRedeemStatus(message)
 end
 
 local function redeemOne(code)
-    local framework = ReplicatedStorage:FindFirstChild("Framework")
-    local systems = framework and framework:FindFirstChild("Systems")
-    local codesSystem = systems and systems:FindFirstChild("CodesSystem")
-    local remote = codesSystem and codesSystem:FindFirstChild("CodeRE")
+    -- Sama seperti alur K5: tunggu remote siap, maksimum 90 detik.
+    local deadline = os.clock() + 90
+    local remote
+    repeat
+        local framework = ReplicatedStorage:FindFirstChild("Framework")
+        local systems = framework and framework:FindFirstChild("Systems")
+        local codesSystem = systems and systems:FindFirstChild("CodesSystem")
+        remote = codesSystem and codesSystem:FindFirstChild("CodeRE")
+        if remote and remote:IsA("RemoteEvent") then break end
+        if not redeemEnabled then return false, "Auto Redeem dihentikan" end
+        task.wait(1)
+    until os.clock() >= deadline
     if not remote or not remote:IsA("RemoteEvent") then
-        return false, "CodeRE tidak ditemukan"
+        return false, "CodeRE tidak ditemukan setelah menunggu 90 detik"
     end
     local ok, err = pcall(function()
         remote:FireServer({event = "usecode", code = code})
@@ -365,7 +477,7 @@ SafetyPanel:CreateLabel("FPS Booster and automatic weapon switching are disabled
 SafetyPanel:CreateLabel("Auto Farm OFF pauses IronSoul V2 combat; ON resumes it.")
 SafetyPanel:CreateLabel("Auto Skill controls the farm skill system; reward automation is standalone.")
 SafetyPanel:CreateLabel("Auto Farm and Auto Redeem have independent toggles.")
-SafetyPanel:CreateLabel("Redeem delay: 16.1 seconds per code (K5 source setting).")
+SafetyPanel:CreateLabel("K5 Redeem: 124 codes • 16.1s delay • waits up to 90s for CodeRE.")
 
 -- Set this only after all tabs, panels, and controls have been created.
 getgenv().IronCodexFarmUILoaded = true
