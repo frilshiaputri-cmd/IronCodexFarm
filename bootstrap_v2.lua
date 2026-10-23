@@ -20,7 +20,7 @@ if getgenv().IronCodexFarmTeleportContinuation ~= true then
     getgenv().IronSoulLevelStopLevel = nil
 end
 if type(Config) == "table" then Config.LEVEL_STOP = 40 end
-local VERSION = "K5_HUB_V2_AUTOEXEC_RETRY_20261021_3"
+local VERSION = "IRONCODEXFARM_V2_TOGGLE_SYNC_20261023_1"
 local BASE =
     "https://raw.githubusercontent.com/"
     .. "frilshiaputri-cmd/Ironsoulkaitun/main/"
