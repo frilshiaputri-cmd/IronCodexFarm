@@ -13,7 +13,7 @@ local Airflow = loadstring(game:HttpGet("https://raw.githubusercontent.com/joust
 getgenv().__Airflow = Airflow
 
 local Window = Airflow:CreateWindow({
-    Name = "IronCodexFarm",
+    Name = "Sc By Frilshia",
     LoadingSubtitle = "Airflow UI • IronSoul V2 + K5 Redeem",
     Icon = "rbxassetid://106988550042558",
     ToggleUIKeybind = "RightShift",
@@ -37,7 +37,7 @@ local RedeemPanel = RedeemTab:CreateGroupbox({Name = "K5 Auto Redeem", Side = "L
 local RedeemStatsPanel = RedeemTab:CreateGroupbox({Name = "Redeem Statistics", Side = "Right"})
 local SafetyPanel = SettingsTab:CreateGroupbox({Name = "Independent Controls", Side = "Left"})
 
-MainPanel:CreateLabel("IronCodexFarm loaded • press RightShift to hide/show")
+MainPanel:CreateLabel("Sc By Frilshia loaded • press RightShift to hide/show")
 MainInfo:CreateParagraph({
     Title = "Source separation",
     Content = "Auto Farm uses the Kaitun V2 bootstrap. Auto Redeem uses K5 codes. Toggles are independent; enabling Redeem does not start Farm.",
@@ -314,7 +314,7 @@ SafetyPanel:CreateLabel("Redeem delay: 16.1 seconds per code (K5 source setting)
 
 -- Set this only after all tabs, panels, and controls have been created.
 getgenv().IronCodexFarmUILoaded = true
-Window:Notify({Title = "IronCodexFarm", Content = "Airflow UI loaded.", Duration = 3})
+Window:Notify({Title = "Sc By Frilshia", Content = "Airflow UI loaded.", Duration = 3})
 print("[IronCodexFarm] Airflow UI loaded")
 
 -- On a queued map/Place teleport, wait until the Airflow table exists before
