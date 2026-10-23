@@ -591,6 +591,23 @@ getgenv().IronSoulBaseURL = BASE
 getgenv().IronSoulQueueBootstrap = queueBootstrap
 getgenv().IronSoulLoadRaw = loadRaw
 
+-- Automatically queue the V2 bootstrap + Airflow table before a map/Place
+-- teleport when Auto Farm is active. The queued payload retries loading both.
+local autoTeleportQueueArmed = true
+if LocalPlayer then
+    pcall(function()
+        LocalPlayer.OnTeleport:Connect(function(state)
+            if not autoTeleportQueueArmed then return end
+            if state == Enum.TeleportState.Started then
+                autoTeleportQueueArmed = false
+                task.defer(function()
+                    queueBootstrap("automatic map/Place change")
+                end)
+            end
+        end)
+    end)
+end
+
 -- No automatic pre-queue: a fresh server join must never auto-execute the loader.
 -- Continuation is only allowed when explicitly requested by an active session,
 -- and remains governed by the normal manual-session continuation rules.
