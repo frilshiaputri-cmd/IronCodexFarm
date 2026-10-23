@@ -308,6 +308,8 @@ SafetyPanel:CreateLabel("V2 announcements are disabled in this repository bootst
 SafetyPanel:CreateLabel("FPS Booster removed. Auto Farm and Auto Redeem have independent toggles.")
 SafetyPanel:CreateLabel("Redeem delay: 16.1 seconds per code (K5 source setting).")
 
+-- Set this only after all tabs, panels, and controls have been created.
+getgenv().IronCodexFarmUILoaded = true
 Window:Notify({Title = "IronCodexFarm", Content = "Airflow UI loaded.", Duration = 3})
 print("[IronCodexFarm] Airflow UI loaded")
 
