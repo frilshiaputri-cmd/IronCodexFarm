@@ -9,7 +9,7 @@ local LocalPlayer = Players.LocalPlayer
 if not LocalPlayer then error("[IronCodexFarm] LocalPlayer unavailable") end
 
 local REPO_RAW = "https://raw.githubusercontent.com/frilshiaputri-cmd/IronCodexFarm/main/"
-local Airflow = loadstring(game:HttpGet("https://raw.githubusercontent.com/joustingmatch/-3/refs/heads/main/Source.luau"))()
+local Airflow = loadstring(game:HttpGet(REPO_RAW .. "Airflow_Dashboard_Replica.lua"))()
 getgenv().__Airflow = Airflow
 
 local Window = Airflow:CreateWindow({
@@ -21,7 +21,7 @@ local Window = Airflow:CreateWindow({
     AdaptiveSize = false,
     UIScale = 1,
     Density = "Default",
-    Size = UDim2.fromOffset(700, 430),
+    Size = UDim2.new(0.82, 0, 0.91, 0),
     ConfigurationSaving = {Enabled = false, FolderName = "IronCodexFarm"},
 })
 
