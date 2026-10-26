@@ -447,28 +447,35 @@ RedeemPanel:CreateButton({
     end,
 })
 
-local antiAfkConnection
+-- Anti-AFK adapted from the AntiAfk module in Anime Dice.lua.txt
+-- Source behavior: one Idled connection; the toggle controls whether its callback acts.
+local VirtualUser = game:GetService("VirtualUser")
 local antiAfkEnabled = false
+local antiAfkConnection
+
+local function onAntiAfkIdled()
+    if not antiAfkEnabled then return end
+    pcall(function()
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.zero)
+    end)
+end
+
 local function setAntiAfk(enabled)
     antiAfkEnabled = enabled == true
     Config.ANTI_AFK = antiAfkEnabled
-    if antiAfkConnection then
-        pcall(function() antiAfkConnection:Disconnect() end)
-        antiAfkConnection = nil
-    end
-    if antiAfkEnabled then
+
+    if not antiAfkConnection then
         local ok, connection = pcall(function()
-            return LocalPlayer.Idled:Connect(function()
-                if not antiAfkEnabled then return end
-                pcall(function()
-                    local virtualUser = game:GetService("VirtualUser")
-                    virtualUser:CaptureController()
-                    virtualUser:ClickButton2(Vector2.new(0, 0))
-                end)
-            end)
+            return LocalPlayer.Idled:Connect(onAntiAfkIdled)
         end)
-        if ok then antiAfkConnection = connection end
+        if ok then
+            antiAfkConnection = connection
+        else
+            warn("[IronCodexFarm] Anti-AFK connection failed:", connection)
+        end
     end
+
     notify("Anti AFK", antiAfkEnabled and "Diaktifkan." or "Dimatikan.")
 end
 
