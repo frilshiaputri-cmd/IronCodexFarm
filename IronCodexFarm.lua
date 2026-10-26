@@ -46,9 +46,7 @@ local RedeemPanel = RedeemTab
 local RedeemStatsPanel = RedeemTab
 local SafetyPanel = SettingsTab
 
-MainPanel:CreateSection("Status")
 MainPanel:CreateLabel("K5-HUB loaded • press RightShift to hide/show")
-MainInfo:CreateSection("Information")
 MainInfo:CreateParagraph({
     Title = "Source separation",
     Content = "Auto Farm uses its own toggle. K5 Redeem and the standalone Season Spin / Claim All controller run independently; reward toggles do not start Auto Farm.",
