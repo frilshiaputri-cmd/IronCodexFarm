@@ -9,35 +9,46 @@ local LocalPlayer = Players.LocalPlayer
 if not LocalPlayer then error("[IronCodexFarm] LocalPlayer unavailable") end
 
 local REPO_RAW = "https://raw.githubusercontent.com/frilshiaputri-cmd/IronCodexFarm/main/"
-local Airflow = loadstring(game:HttpGet(REPO_RAW .. "Airflow_Dashboard_Replica.lua"))()
+-- Use the original Airflow UI library and its documented API.
+-- Upstream: https://github.com/PookiePepelsss/Airflow-UI
+local AIRFLOW_URL = "https://raw.githubusercontent.com/PookiePepelsss/Airflow-UI/refs/heads/main/Source.luau"
+local airflowSource = game:HttpGet(AIRFLOW_URL)
+assert(type(airflowSource) == "string" and #airflowSource > 0, "[IronCodexFarm] Airflow source is empty")
+local airflowLoader, airflowCompileError = loadstring(airflowSource)
+assert(airflowLoader, airflowCompileError or "[IronCodexFarm] Airflow failed to compile")
+local Airflow = airflowLoader()
 getgenv().__Airflow = Airflow
 
 local Window = Airflow:CreateWindow({
-    Name = "Sc By Frilshia",
-    LoadingSubtitle = "Airflow UI • Independent Farm / Redeem / Rewards",
+    Name = "K5-HUB",
+    LoadingSubtitle = "IronCodexFarm • Auto Farm / Redeem / Rewards",
     Icon = "rbxassetid://106988550042558",
+    Theme = "Midnight",
     ToggleUIKeybind = "RightShift",
-    Backdrop = {Weather = "None", Tint = 0.45},
-    AdaptiveSize = false,
-    UIScale = 1,
-    Density = "Default",
-    Size = UDim2.new(0.82, 0, 0.91, 0),
+    Size = UDim2.fromOffset(700, 520),
+    MinSize = Vector2.new(320, 360),
+    KeepOnScreen = true,
+    OpenButton = {Title = "K5-HUB", Icon = "wind"},
+    Loading = {Enabled = true, Title = "K5-HUB", Text = "Preparing Airflow UI", Duration = 1.2},
     ConfigurationSaving = {Enabled = false, FolderName = "IronCodexFarm"},
 })
 
-local MainTab = Window:CreateTab({Name = "Main", Icon = "house"})
-local FarmTab = Window:CreateTab({Name = "Auto Farm", Icon = "tree-pine"})
+local MainTab = Window:CreateTab({Name = "Main", Icon = "layout-dashboard"})
+local FarmTab = Window:CreateTab({Name = "Auto Farm", Icon = "trees"})
 local RedeemTab = Window:CreateTab({Name = "Redeem", Icon = "gift"})
 local SettingsTab = Window:CreateTab({Name = "Settings", Icon = "settings"})
 
-local MainPanel = MainTab:CreateGroupbox({Name = "Status", Side = "Left"})
-local MainInfo = MainTab:CreateGroupbox({Name = "Information", Side = "Right"})
-local FarmPanel = FarmTab:CreateGroupbox({Name = "Farm Controls", Side = "Left"})
-local RedeemPanel = RedeemTab:CreateGroupbox({Name = "K5 Auto Redeem", Side = "Left"})
-local RedeemStatsPanel = RedeemTab:CreateGroupbox({Name = "Redeem Statistics", Side = "Right"})
-local SafetyPanel = SettingsTab:CreateGroupbox({Name = "Independent Controls", Side = "Left"})
+-- Aliases keep the existing feature logic intact while using Airflow's native tab API.
+local MainPanel = MainTab
+local MainInfo = MainTab
+local FarmPanel = FarmTab
+local RedeemPanel = RedeemTab
+local RedeemStatsPanel = RedeemTab
+local SafetyPanel = SettingsTab
 
-MainPanel:CreateLabel("Sc By Frilshia loaded • press RightShift to hide/show")
+MainPanel:CreateSection("Status")
+MainPanel:CreateLabel("K5-HUB loaded • press RightShift to hide/show")
+MainInfo:CreateSection("Information")
 MainInfo:CreateParagraph({
     Title = "Source separation",
     Content = "Auto Farm uses its own toggle. K5 Redeem and the standalone Season Spin / Claim All controller run independently; reward toggles do not start Auto Farm.",
@@ -172,7 +183,7 @@ end
 FarmPanel:CreateToggle({
     Name = "Auto Farm (IronSoul V2)",
     Flag = "ICF_AUTO_FARM",
-    Default = farmEnabled,
+    CurrentValue = farmEnabled,
     Callback = function(value)
         setFarm(value)
     end,
@@ -181,7 +192,7 @@ FarmPanel:CreateToggle({
 FarmPanel:CreateToggle({
     Name = "Auto Skill (IronSoul V2)",
     Flag = "ICF_AUTO_SKILL",
-    Default = Config.AutoSkill,
+    CurrentValue = Config.AutoSkill,
     Callback = function(value)
         Config.AutoSkill = value == true
         getgenv().IronSoulConfig = Config
@@ -324,7 +335,7 @@ local statsLabel = RedeemStatsPanel:CreateLabel("Total codes: " .. #Codes .. "\n
 local function updateRedeemStats()
     local text = ("Total codes: %d | Requests sent: %d"):format(#Codes, redeemedCount)
     pcall(function()
-        if statsLabel and statsLabel.SetText then statsLabel:SetText(text) end
+        if statsLabel and statsLabel.Set then statsLabel:Set(text) end
     end)
     print("[IronCodexFarm Redeem Stats] " .. text)
 end
@@ -332,7 +343,7 @@ updateRedeemStats()
 
 local function setRedeemStatus(message)
     pcall(function()
-        if statusLabel and statusLabel.SetText then statusLabel:SetText("Status: " .. message) end
+        if statusLabel and statusLabel.Set then statusLabel:Set("Status: " .. message) end
     end)
     print("[IronCodexFarm Redeem] " .. message)
 end
@@ -383,7 +394,7 @@ end
 RedeemPanel:CreateToggle({
     Name = "Auto Redeem (K5)",
     Flag = "ICF_AUTO_REDEEM",
-    Default = false,
+    CurrentValue = false,
     Callback = function(value)
         redeemEnabled = value == true
         Config.AUTO_REDEEM = redeemEnabled
@@ -400,7 +411,7 @@ RedeemPanel:CreateToggle({
 RedeemPanel:CreateToggle({
     Name = "Auto Spin Season Tickets (IronCodexFarm)",
     Flag = "ICF_AUTO_SEASON_SPIN",
-    Default = RewardConfig.AUTO_SEASON_SPIN == true,
+    CurrentValue = RewardConfig.AUTO_SEASON_SPIN == true,
     Callback = function(value)
         RewardConfig.AUTO_SEASON_SPIN = value == true
         getgenv().IronCodexFarmRewardConfig = RewardConfig
@@ -416,7 +427,7 @@ RedeemPanel:CreateToggle({
 RedeemPanel:CreateToggle({
     Name = "Auto Claim All (IronCodexFarm)",
     Flag = "ICF_AUTO_CLAIM_ALL",
-    Default = RewardConfig.AUTO_CLAIM_ALL == true,
+    CurrentValue = RewardConfig.AUTO_CLAIM_ALL == true,
     Callback = function(value)
         RewardConfig.AUTO_CLAIM_ALL = value == true
         getgenv().IronCodexFarmRewardConfig = RewardConfig
@@ -466,7 +477,7 @@ end
 SafetyPanel:CreateToggle({
     Name = "Anti AFK",
     Flag = "ICF_ANTI_AFK",
-    Default = false,
+    CurrentValue = false,
     Callback = function(value)
         setAntiAfk(value)
     end,
@@ -481,7 +492,7 @@ SafetyPanel:CreateLabel("K5 Redeem: 124 codes • 16.1s delay • waits up to 90
 
 -- Set this only after all tabs, panels, and controls have been created.
 getgenv().IronCodexFarmUILoaded = true
-Window:Notify({Title = "Sc By Frilshia", Content = "Airflow UI loaded.", Duration = 3})
+Window:Notify({Title = "K5-HUB", Content = "Original Airflow UI loaded.", Duration = 3})
 print("[IronCodexFarm] Airflow UI loaded")
 
 -- On a queued map/Place teleport, wait until the Airflow table exists before
